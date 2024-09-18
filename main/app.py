@@ -1,6 +1,12 @@
 from ortools.sat.python import cp_model
 
+
+def get_number_of_employees(num_employees):
+    return num_employees
+
+
 def main() -> None:
+    
     # i set number of employee
     num_employees = 6 
     num_shift_per_day = 4 #there will be 4 role titles: 1 manager, 1 host, 1 busser, 1 servers
@@ -17,6 +23,7 @@ def main() -> None:
     all_days = range(num_days)
 
     # create model 
+    
     model = cp_model.CpModel()
 
     # create an array to store SHIFT OF EMPLOYEE that will display the (e, d, s) ONE PER SHIFT. 
@@ -130,7 +137,7 @@ def main() -> None:
 
         def solutionCount(self):
             return self._solution_count
-
+     
     # Display the first five solutions.
     solution_limit = 5
     solution_printer = EmployeesPartialSolutionPrinter(
@@ -139,6 +146,9 @@ def main() -> None:
 
     # Use SolveWithSolutionCallback to pass the callback
     solver.SolveWithSolutionCallback(model, solution_printer)
+
+
+
 
     # Statistics.
     print("\nStatistics")
