@@ -58,6 +58,13 @@ def create_shift_scheduling_model(
             for shift in shift_range:
                 total_hours_worked.append(shift_assignments[(employee, day, shift)])
 
+    # Constraint: Ensure employees work within their respective hour limits
+    for employee in employee_range:
+        total_hours_worked = []
+        for day in day_range:
+            for shift in shift_range:
+                total_hours_worked.append(shift_assignments[(employee, day, shift)])
+
         # Apply hourly constraints based on employee type
         if employee_types[employee] == 'full_time':
             model.add(sum(total_hours_worked) <= full_time_hours)
