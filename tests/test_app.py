@@ -1,5 +1,5 @@
 import pytest
-from main.app import create_shift_scheduling_model, solve_shift_scheduling
+from main.main import create_shift_scheduling_model, solve_shift_scheduling
 import time
 
 # Assertion: If there are 4 employees and 4 shifts available, each one of them should get one.
