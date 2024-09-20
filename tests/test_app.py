@@ -53,6 +53,34 @@ def test_part_time_hour_limit():
             total_work_hours <= 20
         ), f"Part-time employee {e} should not work more than 20 hours."
 
+############################################################################################################
+
+# assertion: full-time employees don't exceed 40 hour limit. Near copy of part_time_hour_limit (full time compliance)
+def test_full_time_hour_limit():
+    num_employees = 4
+    num_shift_per_day = 4
+    num_days = 7
+    employee_types = ["full_time", "part_time", "manager", "part_time"]
+
+    model, shifts = create_model(
+        num_employees, num_shift_per_day, num_days, employee_types
+    )
+    solver = solve_model(model, shifts, num_employees, num_shift_per_day, num_days)
+
+    # Ensure that part-time employees do not exceed their hour limits  (part time compliance)
+    full_time_employee_indices = [
+        i for i, et in enumerate(employee_types) if et == "full_time"
+    ]
+    for e in full_time_employee_indices:
+        total_work_hours = sum(
+            solver.Value(shifts[(e, d, s)])
+            for d in range(num_days)
+            for s in range(num_shift_per_day)
+        )
+        assert (
+            total_work_hours <= 40
+        ), f"full-time employee {e} should not work more than 40 hours without approval."
+
 
 
 # assertion: if we have two main shifts per day, the minimum number of employees needed is 8 if all are full-time
@@ -171,3 +199,5 @@ def test_one_employee_per_shift():
         for s in range(num_shift_per_day):
             total_employees_assigned = sum(solver.Value(shifts[(e, d, s)]) for e in range(num_employees))
             assert total_employees_assigned == 1, f"Shift {s} on day {d} has {total_employees_assigned} employees assigned, expected 1"
+
+
