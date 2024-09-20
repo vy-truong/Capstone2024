@@ -498,3 +498,217 @@ def test_no_employees():
         num_employees, shifts_per_day, total_days, employee_types
     )
     assert len(shifts) == 0, "Shifts dictionary should be empty when there are no employees."
+
+# Test case 14: There are more employees than available shift 
+def test_more_employee_than_available_shift():
+    """
+    Test there are more employees than available shift. Test should pass when there are not enough available shift per day 
+    """
+    num_employees = 20
+    shifts_per_day = 2
+    total_days = 3
+    employee_types = [
+        "full_time", "full_time",
+        "full_time", "full_time",
+        "full_time", "full_time",
+        "part_time", "full_time",
+        "part_time", "part_time",
+        "part_time", "full_time", 
+        "full_time", "full_time",
+        "full_time", "full_time",
+        "part_time", "full_time",
+        "part_time", "part_time",
+        ]
+    model, shifts = create_shift_scheduling_model(
+        num_employees, shifts_per_day, total_days, employee_types
+    )
+    
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    assert status == cp_model.OPTIMAL or status == cp_model.INFEASIBLE, "Solver did not find a feasible solution."
+
+    assert status == cp_model.INFEASIBLE, (
+        "Expected no solution due to insufficient staffing, but a solution was found!"
+    )
+            
+ # Test case 15: There are just enough employee to cover available shifts  
+    """
+    Test use to check if the program is able to generate solution under sufficient staff with more full time than part time.
+    This test will pass when full time employee can work 40 hours a week, and part time employees do not work over 20 hours
+    """
+def test_sufficient_staff_with_more_full_time_than_part_time():
+    num_employees = 4
+    shifts_per_day = 4
+    total_days = 7
+    part_time_hours = 20
+    full_time_hours = 40
+    full_shift = 8
+    half_shift = 4
+    employee_types = [ 
+        "full_time",
+        "full_time",
+        "part_time",
+        "part_time",
+        ]
+    model, shifts = create_shift_scheduling_model(
+        num_employees,
+        shifts_per_day,
+        total_days,
+        employee_types,
+        full_time_hours= full_time_hours,
+        part_time_hours= part_time_hours,
+        full_shift= 8,
+        half_shift= 4,
+    )
+
+    # Enforce exact working hours for full-time employees
+    for employee in range(num_employees):
+        if employee_types[employee] == "full_time":
+            model.Add(
+                sum(
+                    shifts[(employee, day, shift)] * full_shift
+                    for day in range(total_days)
+                    for shift in range(shifts_per_day)
+                )
+                == 40
+            )
+
+    # Enforce maximum working hours for part-time employees
+    for employee in range(num_employees):
+        if employee_types[employee] == "part_time":
+            model.Add(
+                sum(
+                    shifts[(employee, day, shift)] * half_shift
+                    for day in range(total_days)
+                    for shift in range(shifts_per_day)
+                )
+                <= 20
+            )
+
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    assert status == cp_model.INFEASIBLE, (
+        "Expected no solution due to just have the right number of staff to cover available shift. However, the program still generate valid solution since full time workers >= part time worker. "
+    )
+
+
+
+  # Test case 16: There are just enough employee to cover available shifts  
+    """
+    Test use to check if the program is able to generate solution under sufficient staff with more full time than part time. Test is expected to fail since there are more part time staff than full time staff. However, the program DID FIND A SOLUTION
+    """
+def test_sufficient_staff_with_more_part_time_than_full_time():
+    num_employees = 4
+    shifts_per_day = 4
+    total_days = 7
+    part_time_hours = 20 # Reduce from 20 to 8
+    full_time_hours = 40
+    full_shift = 8
+    half_shift = 4
+    employee_types = [ 
+        "part_time",
+        "part_time",
+        "part_time",
+        "full_time",
+        ]
+    model, shifts = create_shift_scheduling_model(
+        num_employees,
+        shifts_per_day,
+        total_days,
+        employee_types,
+        full_time_hours= full_time_hours,
+        part_time_hours= part_time_hours,
+        full_shift= 8,
+        half_shift= 4,
+    )
+
+    # Enforce exact working hours for full-time employees
+    for employee in range(num_employees):
+        if employee_types[employee] == "full_time":
+            model.Add(
+                sum(
+                    shifts[(employee, day, shift)] * full_shift
+                    for day in range(total_days)
+                    for shift in range(shifts_per_day)
+                )
+                == 40
+            )
+
+    # Enforce maximum working hours for part-time employees
+    for employee in range(num_employees):
+        if employee_types[employee] == "part_time":
+            model.Add(
+                sum(
+                    shifts[(employee, day, shift)] * half_shift
+                    for day in range(total_days)
+                    for shift in range(shifts_per_day)
+                )
+                <= 20
+            )
+
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    assert status == cp_model.INFEASIBLE, (
+        "Expected no solution due to just have the right number of staff to cover available shift. However, the program still generate valid solution since full time workers >= part time worker. "
+    )   
+
+
+ # Test case 17: There are just enough employee to cover available shifts  
+    """
+    Test use to check if the program is able to generate solution under sufficient staff with more full time than part time. Test is expected to be INFEASIBLE since there are more part time staff than full time staff. 
+    """
+def test_available_shifts_are_double_part_time_employees():
+    num_employees = 4
+    shifts_per_day = 8
+    total_days = 7
+    part_time_hours = 20
+    half_shift = 4
+    employee_types = [
+        "part_time",
+        "part_time",
+        "part_time",
+        "part_time",
+    ]
+
+    model, shifts = create_shift_scheduling_model(
+        num_employees,
+        shifts_per_day,
+        total_days,
+        employee_types,
+        part_time_hours= part_time_hours,
+        half_shift= half_shift,
+    )
+
+    # Ensure that each shift must be covered by exactly one employee
+    for day in range(total_days):
+        for shift in range(shifts_per_day):
+            model.Add(
+                sum(shifts[(employee, day, shift)] for employee in range(num_employees)) == 1
+            )
+
+    # Enforce part-time employees do not exceed their hours
+    for employee in range(num_employees):
+        if employee_types[employee] == "part_time":
+            model.Add(
+                sum(
+                    shifts[(employee, day, shift)] * half_shift
+                    for day in range(total_days)
+                    for shift in range(shifts_per_day)
+                ) <= part_time_hours
+            )
+
+    # Initialize solver
+    solver = cp_model.CpSolver()
+    
+    # Solve the model
+    status = solver.Solve(model)
+
+    # Check if the solution is INFEASIBLE (no valid solution)
+    assert status == cp_model.INFEASIBLE, (
+        "Expected no solution due to insufficient part-time staff to cover all shifts, "
+        "but the program still generated a valid solution."
+    )
+
