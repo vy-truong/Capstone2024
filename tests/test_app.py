@@ -19,7 +19,6 @@ def test_full_time_hours():
     # solver to do result 
     solver = solve_shift_scheduling(model, shifts, num_employees, shifts_per_day, total_days,  return_solver=True)
 
-
     #check full time 
     for e in range(3): 
         hours_worked = sum(solver.Value(shifts[(e, d, s)]) * 8 for d in range(total_days) for s in range(shifts_per_day))
@@ -37,8 +36,6 @@ def test_part_time_over():
     for e in range(3, 5):  
         hours_worked = sum(solver.Value(shifts[(e, d, s)]) * 4 for d in range(total_days) for s in range(shifts_per_day))
         assert hours_worked <= 20, f"part time over 20 hours {e}"
-
-
 
 
 # Expectation: When there are more part-time workers than full-time workers, and the system cannot find a valid schedule (e.g., full-time workers can't cover enough shifts to meet 40 hours), the solver should return no solution.
@@ -116,5 +113,3 @@ def test_not_enough():
 
     # Expect no solution because 1 part-time worker can't cover all shifts
     assert status == cp_model.INFEASIBLE, "Expected no solution, but a solution was found!"
-
-
