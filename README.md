@@ -1,3 +1,5 @@
+AI Discliaimer: Some of the code in this repo was generated with the help of ChatGPT.
+
 ## OR Tools, specifically as it relates to the nursing problem, and core of the app can be found here:
 https://developers.google.com/optimization/scheduling/employee_scheduling
 
